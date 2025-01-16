@@ -4,7 +4,6 @@ library(bslib)
 library(thematic)
 library(tidyverse)
 library(gitlink)
-library(ps)      # For system monitoring
 
 # Create sample data since setup.R isn't available
 industries <- c("Technology", "Healthcare", "Finance", "Retail")
@@ -137,33 +136,34 @@ server <- function(input, output) {
   
   # System monitoring reactive timer
   autoInvalidate <- reactiveTimer(1000)  # Update every second
-  
-  # Initialize ps_handle for CPU monitoring
-  ps_handle <- ps::ps_handle()
-  prev_cpu <- ps::ps_cpu_times(ps_handle)
-  
+
   # Memory usage monitor
   output$memory_usage <- renderText({
     autoInvalidate()
     tryCatch({
-      mem_info <- ps::ps_memory_info()
-      if (!is.null(mem_info) && !is.null(mem_info[["rss"]])) {
-        mem_usage <- mem_info[["rss"]] / (1024^2)  # Convert to MB
-        sprintf("%.1f MB", mem_usage)
-      } else {
-        "N/A"
-      }
+      # Get memory usage using base R
+      mem_used <- sum(gc()[,2]) * 1024^2  # Convert to MB
+      sprintf("%.1f MB", mem_used)
     }, error = function(e) {
       "N/A"
     })
   })
-  
-  # CPU usage monitor - simplified version
+
+  # CPU usage using simple calculation
   output$cpu_usage <- renderText({
     autoInvalidate()
-    
     tryCatch({
-      cpu_percent <- ps::ps_system_cpu_percent()
+      # Create a simple CPU load estimate
+      start_time <- Sys.time()
+      start_stats <- gc.time()
+      Sys.sleep(0.1)  # Short delay
+      end_stats <- gc.time()
+      end_time <- Sys.time()
+      
+      elapsed <- as.numeric(end_time - start_time)
+      cpu_time <- (end_stats[1] - start_stats[1])
+      
+      cpu_percent <- min((cpu_time / elapsed) * 100, 100)
       sprintf("%.1f%%", cpu_percent)
     }, error = function(e) {
       "N/A"
