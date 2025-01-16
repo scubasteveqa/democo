@@ -141,33 +141,17 @@ server <- function(input, output) {
   output$memory_usage <- renderText({
     autoInvalidate()
     tryCatch({
-      # Get memory usage using base R
-      mem_used <- sum(gc()[,2]) * 1024^2  # Convert to MB
-      sprintf("%.1f MB", mem_used)
+      mem <- utils::memory.size()
+      sprintf("%.1f MB", mem)
     }, error = function(e) {
-      "N/A"
+      "Limited"
     })
   })
 
-  # CPU usage using simple calculation
+  # CPU usage - simplified for cloud
   output$cpu_usage <- renderText({
     autoInvalidate()
-    tryCatch({
-      # Create a simple CPU load estimate
-      start_time <- Sys.time()
-      start_stats <- gc.time()
-      Sys.sleep(0.1)  # Short delay
-      end_stats <- gc.time()
-      end_time <- Sys.time()
-      
-      elapsed <- as.numeric(end_time - start_time)
-      cpu_time <- (end_stats[1] - start_stats[1])
-      
-      cpu_percent <- min((cpu_time / elapsed) * 100, 100)
-      sprintf("%.1f%%", cpu_percent)
-    }, error = function(e) {
-      "N/A"
-    })
+    "Cloud"
   })
   
   output$recommended_eval <- renderText({
