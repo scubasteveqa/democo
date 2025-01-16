@@ -137,20 +137,12 @@ server <- function(input, output) {
   # System monitoring reactive timer
   autoInvalidate <- reactiveTimer(1000)  # Update every second
 
-  # Memory usage monitor
+  # Simple monitor for cloud environment
   output$memory_usage <- renderText({
-    autoInvalidate()
-    tryCatch({
-      mem <- utils::memory.size()
-      sprintf("%.1f MB", mem)
-    }, error = function(e) {
-      "Limited"
-    })
+    "Cloud"
   })
 
-  # CPU usage - simplified for cloud
   output$cpu_usage <- renderText({
-    autoInvalidate()
     "Cloud"
   })
   
