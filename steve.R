@@ -81,12 +81,12 @@ ui <- page_sidebar(
       theme_color = "secondary"
     ),
     value_box(
-      title = "Memory Usage",
+      title = "Filtered Rows",  # Changed from "Memory Usage"
       value = textOutput("memory_usage"),
       theme_color = "info"
     ),
     value_box(
-      title = "CPU Usage",
+      title = "Active Filters",  # Changed from "CPU Usage"
       value = textOutput("cpu_usage"),
       theme_color = "info"
     ),
@@ -134,16 +134,20 @@ server <- function(input, output) {
              contract %in% selected_contracts())
   })
   
-  # System monitoring reactive timer
-  autoInvalidate <- reactiveTimer(1000)  # Update every second
-
-  # Simple monitor for cloud environment
+  # Show number of filtered rows instead of memory usage
   output$memory_usage <- renderText({
-    "Cloud"
+    n_rows <- nrow(filtered_expansions())
+    format(n_rows, big.mark=",")
   })
 
+  # Show number of active filters instead of CPU usage
   output$cpu_usage <- renderText({
-    "Cloud"
+    n_filters <- sum(
+      length(input$industry) > 0,
+      length(input$propensity) > 0,
+      length(input$contract) > 0
+    )
+    as.character(n_filters)
   })
   
   output$recommended_eval <- renderText({
